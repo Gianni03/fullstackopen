@@ -1,19 +1,30 @@
-import { useState } from 'react'
-import Note from './components/Note.jsx'
-import Course from './components/Course.jsx'
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import Note from './components/Note.jsx';
+import Course from './components/Course.jsx';
 
-
-
-
-const App = (props) => {
-  const [notes, setNotes] = useState(props.notes);
+const App = () => {
+  const [notes, setNotes] = useState([]);
   const [newNote, setNewNote] = useState('a new note...');
   const [showAll, setShowAll] = useState(true);
+
+  const hook = () => {
+    console.log('effect');
+    axios
+      .get('http://localhost:3001/notes')
+      .then((response) => {
+      console.log('promise fulfilled');
+      setNotes(response.data);
+      console.log(response.data);
+    });
+  };
+
+  useEffect(hook, []);
 
   const handleNoteChange = (event) => {
     console.log('note changed', event.target.value);
     setNewNote(event.target.value);
-  }
+  };
 
   const addNote = (event) => {
     event.preventDefault();
@@ -21,12 +32,12 @@ const App = (props) => {
       content: newNote,
       important: Math.random() < 0.5,
       id: notes.length + 1,
-    }
+    };
     setNotes(notes.concat(noteObject));
     setNewNote('');
-  }
+  };
 
-  const notesToShow = showAll ? notes : notes.filter(note => note.important);
+  const notesToShow = showAll ? notes : notes.filter((note) => note.important);
 
   const courses = [
     {
@@ -36,25 +47,25 @@ const App = (props) => {
         {
           name: 'Fundamentals of React',
           exercises: 10,
-          id: 1
+          id: 1,
         },
         {
           name: 'Using props to pass data',
           exercises: 7,
-          id: 2
+          id: 2,
         },
         {
           name: 'State of a component',
           exercises: 14,
-          id: 3
+          id: 3,
         },
         {
           name: 'Redux',
           exercises: 11,
-          id: 4
-        }
-      ]
-    }, 
+          id: 4,
+        },
+      ],
+    },
     {
       name: 'Node.js',
       id: 2,
@@ -62,42 +73,39 @@ const App = (props) => {
         {
           name: 'Routing',
           exercises: 3,
-          id: 1
+          id: 1,
         },
         {
           name: 'Middlewares',
           exercises: 7,
-          id: 2
-        }
-      ]
-    }
-  ]
+          id: 2,
+        },
+      ],
+    },
+  ];
 
   return (
-<>
-    <Course courses={courses} />
-    <div>
-      <h1>Notes</h1>
+    <>
+      <Course courses={courses} />
       <div>
-        <button onClick={() => setShowAll(!showAll)}>
-          show {showAll ? 'important' : 'all'}
-        </button>
+        <h1>Notes</h1>
+        <div>
+          <button onClick={() => setShowAll(!showAll)}>
+            show {showAll ? 'important' : 'all'}
+          </button>
+        </div>
+        <ul>
+          {notesToShow.map((note) => (
+            <Note key={note.id} note={note} />
+          ))}
+        </ul>
+        <form onSubmit={addNote}>
+          <input value={newNote} onChange={handleNoteChange} />
+          <button type="submit">save</button>
+        </form>
       </div>
-      <ul>
-        {notesToShow.map(note => 
-          <Note key={note.id} note={note} />
-        )}
-      </ul>
-      <form onSubmit={addNote}>
-        <input 
-          value={newNote}
-          onChange={handleNoteChange}
-        />
-        <button type="submit">save</button>
-      </form>
-    </div>
-</>
-  ) 
-}
+    </>
+  );
+};
 
-export default App
+export default App;
