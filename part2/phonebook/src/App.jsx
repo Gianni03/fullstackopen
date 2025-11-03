@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import Filter from './components/Filter';
 import PersonForm from './components/PersonForm';
 import PersonList from './components/PersonList';
-import axios from 'axios';
+import phonebook from './services/phonebook';
+
 
 const App = () => {
   const [persons, setPersons] = useState([]) 
@@ -10,13 +11,11 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('');
 
   useEffect(() => {
-  console.log('effect')
-  axios
-    .get('http://localhost:3001/persons')
-    .then(response => {
-      console.log('promise fulfilled')
-      setPersons(response.data)
-    })
+   phonebook
+        .getAll()
+        .then(initialPersons => {
+        setPersons(initialPersons);
+      });
 }, [])
 
   const handleNameChange = (event) => {
@@ -38,14 +37,26 @@ const App = () => {
       name: newName,
       number: newNumber,
     }
-    axios
-    .post('http://localhost:3001/persons', nameObject)
-    .then(response => {
-      console.log(response)
-      
-    })
+    phonebook
+      .create(nameObject)
+      .then(response => {
+        setPersons(persons.concat(response.data))
+        setNewName('')
+        setNewNumber('')
+      })
   }
 }
+
+  const handleDelete = (id) => {
+    if (window.confirm(`Delete person with id ${id}?`)) {
+      phonebook
+        .erase(id)
+        .then(() => {
+          setPersons(persons.filter(person => person.id !== id));
+        });
+    }
+  }
+
   const handleSearch = (event) => {
     const searchTerm = event.target.value.toLowerCase();
     const filteredPersons = persons.filter(person => 
@@ -64,7 +75,7 @@ const App = () => {
        <Filter handleSearch={handleSearch} />
        <PersonForm addPerson={addPerson} handleNameChange={handleNameChange} handleNumberChange={handleNumberChange} newName={newName} newNumber={newNumber} />
       <h2>Numbers</h2>
-      <PersonList persons={persons} />
+      <PersonList persons={persons} handleDelete={handleDelete} />
     </div>
   )
 }
