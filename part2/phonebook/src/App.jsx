@@ -3,12 +3,14 @@ import Filter from './components/Filter';
 import PersonForm from './components/PersonForm';
 import PersonList from './components/PersonList';
 import phonebook from './services/phonebook';
+import Success from './components/Success';
 
 
 const App = () => {
   const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
    phonebook
@@ -43,7 +45,13 @@ const App = () => {
         setPersons(persons.concat(response.data))
         setNewName('')
         setNewNumber('')
+
+        setSuccessMessage(`Added ${newName}`)
+        setTimeout(() => {
+          setSuccessMessage(null)
+        }, 5000)
       })
+      
   }
 }
 
@@ -73,6 +81,7 @@ const App = () => {
     <div>
       <h2>Phonebook</h2>
        <Filter handleSearch={handleSearch} />
+      <Success message={successMessage} />
        <PersonForm addPerson={addPerson} handleNameChange={handleNameChange} handleNumberChange={handleNumberChange} newName={newName} newNumber={newNumber} />
       <h2>Numbers</h2>
       <PersonList persons={persons} handleDelete={handleDelete} />
